@@ -7,11 +7,7 @@ const env = cleanEnv(process.env, {
   SPOTIFY_CLIENT_SECRET: str(),
 })
 
-const scopes = [
-  'user-read-email',
-  'user-read-private',
-  'user-top-read',
-]
+const scopes = ['user-read-email', 'user-read-private', 'user-top-read']
 
 export const authOptions: NextAuthOptions = {
   providers: [
