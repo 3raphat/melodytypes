@@ -1,15 +1,15 @@
-import { CloseIcon } from '@chakra-ui/icons'
 import {
   Box,
   Button,
   Flex,
   Grid,
   Heading,
-  HStack,
+  Icon,
   LayoutProps,
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { X } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 interface FullScreenErrorProps {
@@ -31,7 +31,7 @@ export default function FullScreenError({ height }: FullScreenErrorProps) {
             h='55px'
             textAlign='center'
           >
-            <CloseIcon boxSize='20px' color='white' />
+            <Icon as={X} boxSize='20px' color='white' />
           </Flex>
         </Box>
         <Heading mt={6} mb={2}>

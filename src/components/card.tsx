@@ -1,17 +1,7 @@
-import Image from 'next/image'
-import Link from 'next/link'
-
 import {
   Box,
-  Center,
-  Divider,
-  Flex,
-  Grid,
   Heading,
   HStack,
-  Icon,
-  ListItem,
-  SimpleGrid,
   Stack,
   Stat,
   StatGroup,
@@ -19,11 +9,8 @@ import {
   StatNumber,
   Text,
   Tooltip,
-  UnorderedList,
-  Wrap,
 } from '@chakra-ui/react'
 import convert from 'color-convert'
-import { ArrowUpRight } from 'lucide-react'
 
 import CopyToClipboard from '@/components/copy-to-clipboard'
 import { getMBTIName } from '@/lib/getMBTIName'

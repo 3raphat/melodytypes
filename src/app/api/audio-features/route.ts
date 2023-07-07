@@ -3,9 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 
 import { authOptions } from '@/lib/auth'
-import { getAudioFeatures, getTopItems } from '@/lib/spotify'
-
-import { AudioFeatures } from '../../../types/AudioFeatures'
+import { getAudioFeatures } from '@/lib/spotify'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)

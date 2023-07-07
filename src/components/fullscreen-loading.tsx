@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Grid, LayoutProps } from '@chakra-ui/react'
 
 import Loader from '@/components/loader'

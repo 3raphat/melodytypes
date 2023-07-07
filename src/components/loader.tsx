@@ -1,6 +1,4 @@
-import React from 'react'
-
-import { Box, Flex, Spinner, Text, VStack } from '@chakra-ui/react'
+import { Flex, Spinner, Text } from '@chakra-ui/react'
 
 export default function Loader() {
   return (
