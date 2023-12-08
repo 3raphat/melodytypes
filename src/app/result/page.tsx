@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { Box, Container, Heading } from '@chakra-ui/react'
+import { Box, Container, Heading, Skeleton } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import lodash from 'lodash'
 import { useSession } from 'next-auth/react'
@@ -74,7 +74,11 @@ export default function ResultPage() {
         <UserMenu />
       </Box>
       <Heading my={8}>{session?.user?.name}, your MBTI is ...</Heading>
-      <Card mbti={guessMBTI(audioData)} stats={audioData} />
+      {guessMBTI(audioData) === 'XXXX' ? (
+        <Skeleton height='360px' width='full' />
+      ) : (
+        <Card mbti={guessMBTI(audioData)} stats={audioData} />
+      )}
     </Container>
   )
 }
