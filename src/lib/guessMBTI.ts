@@ -15,26 +15,34 @@ export function guessMBTI({
 
   if (danceability > 0.8) {
     mbti += 'E'
-  } else {
+  } else if (danceability <= 0.8) {
     mbti += 'I'
+  } else {
+    mbti += 'X'
   }
 
   if (energy > 0.5) {
     mbti += 'N'
-  } else {
+  } else if (energy <= 0.5) {
     mbti += 'S'
+  } else {
+    mbti += 'X'
   }
 
   if (liveness > 0.5) {
     mbti += 'F'
-  } else {
+  } else if (liveness <= 0.5) {
     mbti += 'T'
+  } else {
+    mbti += 'X'
   }
 
   if (valence > 0.5) {
     mbti += 'P'
-  } else {
+  } else if (valence <= 0.5) {
     mbti += 'J'
+  } else {
+    mbti += 'X'
   }
 
   return mbti
