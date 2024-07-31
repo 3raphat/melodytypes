@@ -1,84 +1,102 @@
-'use client'
+import { redirect } from "next/navigation"
 
-import { useEffect, useState } from 'react'
+import { CircularProgress } from "@nextui-org/react"
 
-import { Box, Container, Heading, Skeleton } from '@chakra-ui/react'
-import { useQuery } from '@tanstack/react-query'
-import lodash from 'lodash'
-import { useSession } from 'next-auth/react'
+import { BackButton } from "~/components/back-button"
+import { ImageResult } from "~/components/image-result"
+import { SignOutButton } from "~/components/sign-out-button"
+import {
+  classifyMBTI,
+  getName,
+  type MusicPreferences,
+} from "~/lib/classify-mbti"
+import { getServerAuthSession } from "~/server/auth"
+import { api } from "~/trpc/server"
 
-import Card from '@/components/card'
-import FullScreenError from '@/components/fullscreen-error'
-import FullScreenLoading from '@/components/fullscreen-loading'
-import UserMenu from '@/components/user-menu'
-import { guessMBTI, type AudioData } from '@/lib/guessMBTI'
-import { type Track } from '@/types/Track'
+export default async function ResultPage() {
+  const session = await getServerAuthSession()
 
-export default function ResultPage() {
-  const { data: session } = useSession()
+  if (!session) return redirect("/api/auth/signin")
 
-  const [ids, setIds] = useState<string[]>()
+  const topTracks = await api.spotify.getTopTracks()
 
-  const { data: topTracks, status: tracksStatus } = useQuery<Track[]>({
-    queryKey: ['tracks'],
-    queryFn: async () =>
-      fetch('/api/top?type=tracks&time_range=short_term&limit=50').then(
-        async (res) => res.json()
-      ),
+  const audioFeatures = await api.spotify.getAudioFeatures({
+    trackIds: topTracks.items.map((track) => track.id),
   })
 
-  useEffect(() => {
-    setIds(topTracks?.map((track) => track.id))
-  }, [topTracks])
+  const avgAudioFeatures = audioFeatures.audio_features.reduce(
+    (acc, feature) => {
+      acc.acousticness += feature.acousticness
+      acc.danceability += feature.danceability
+      acc.energy += feature.energy
+      acc.instrumentalness += feature.instrumentalness
+      acc.liveness += feature.liveness
+      acc.mode += feature.mode
+      acc.speechiness += feature.speechiness
+      acc.tempo += feature.tempo
+      acc.valence += feature.valence
+      return acc
+    },
+    {
+      acousticness: 0,
+      danceability: 0,
+      energy: 0,
+      instrumentalness: 0,
+      liveness: 0,
+      mode: 0,
+      speechiness: 0,
+      tempo: 0,
+      valence: 0,
+    } as MusicPreferences
+  )
 
-  const [audioData, setAudioData] = useState<AudioData>({
-    danceability: 0,
-    energy: 0,
-    liveness: 0,
-    valence: 0,
-  })
+  for (const key of Object.keys(avgAudioFeatures) as Array<
+    keyof MusicPreferences
+  >) {
+    avgAudioFeatures[key] /= audioFeatures.audio_features.length
+  }
 
-  const { data: audioFeatures, status: audioFeaturesStatus } = useQuery({
-    queryKey: ['audio-features', ids],
-    queryFn: async () =>
-      fetch(`/api/audio-features?ids=${ids?.join(',')}`).then(async (res) =>
-        res.json()
-      ),
-  })
+  const mbti = classifyMBTI(avgAudioFeatures)
 
-  useEffect(() => {
-    const danceability = audioFeatures?.map(
-      (track: AudioData) => track?.danceability
-    )
-    const energy = audioFeatures?.map((track: AudioData) => track?.energy)
-    const liveness = audioFeatures?.map((track: AudioData) => track?.liveness)
-    const valence = audioFeatures?.map((track: AudioData) => track?.valence)
-
-    setAudioData({
-      danceability: lodash.mean(danceability),
-      energy: lodash.mean(energy),
-      liveness: lodash.mean(liveness),
-      valence: lodash.mean(valence),
-    })
-  }, [audioFeatures])
-
-  if ((tracksStatus || audioFeaturesStatus) === 'loading')
-    return <FullScreenLoading />
-
-  if ((tracksStatus || audioFeaturesStatus) === 'error')
-    return <FullScreenError />
+  const bar = (feature: keyof MusicPreferences) => (
+    <div className="mx-auto">
+      <CircularProgress
+        aria-label={feature}
+        label={feature.toUpperCase().charAt(0) + feature.slice(1)}
+        size="lg"
+        value={avgAudioFeatures[feature] * 100}
+        color="warning"
+        showValueLabel={true}
+      />
+    </div>
+  )
 
   return (
-    <Container maxW='container.lg' my={12}>
-      <Box w='full' display='flex' justifyContent='end'>
-        <UserMenu />
-      </Box>
-      <Heading my={8}>{session?.user?.name}, your MBTI is ...</Heading>
-      {guessMBTI(audioData) === 'XXXX' ? (
-        <Skeleton height='360px' width='full' />
-      ) : (
-        <Card mbti={guessMBTI(audioData)} stats={audioData} />
-      )}
-    </Container>
+    <div className="flex min-h-screen flex-col items-center justify-center">
+      <BackButton />
+      <SignOutButton />
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="flex flex-col items-center justify-center">
+          <ImageResult
+            mbti={mbti.toLowerCase()}
+            name={getName(mbti).toLowerCase()}
+          />
+          <h2 className="mt-4 text-4xl font-bold">{mbti}</h2>
+          <p className="text-xl dark:text-subtle-light">{getName(mbti)}</p>
+        </div>
+        <div className="flex items-center justify-center">
+          <div className="grid grid-cols-2 gap-4">
+            {bar("acousticness")}
+            {bar("danceability")}
+            {bar("energy")}
+            {bar("instrumentalness")}
+            {bar("liveness")}
+            {bar("mode")}
+            {bar("speechiness")}
+            {bar("valence")}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

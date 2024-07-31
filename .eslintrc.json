@@ -1,5 +1,0 @@
-{
-  "$schema": "https://json.schemastore.org/eslintrc",
-  "extends": ["next/core-web-vitals", "plugin:prettier/recommended"],
-  "parser": "@typescript-eslint/parser"
-}
